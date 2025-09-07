@@ -1,0 +1,1220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Father Wounds App — Depths to Heights</title>
+<meta name="description" content="Healing companion for men and women carrying father wounds—Scripture blessings, Abba Father devotional, lie→truth reflections, and audio affirmations. Runs offline.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='64' height='64'%3E%3Crect rx='12' width='64' height='64' fill='%23ff7aa2'/%3E%3Ctext x='50%25' y='58%25' font-family='Segoe UI' font-size='36' text-anchor='middle' fill='%230a0a0a'%3EDF%3C/text%3E%3C/svg%3E">
+<style>
+  :root{
+    --bg:#0f1026;          /* midnight indigo */
+    --ink:#ffffff;         /* white text */
+    --ink-dim:#ccd5ff;     /* muted text */
+    --card:#15183a;        /* deep panel */
+    --card-2:#10122c;      /* darker panel */
+    --rose:#ff7aa2;        /* rose accent */
+    --peach:#ffb86b;       /* peach accent */
+    --mint:#36d6c4;        /* mint accent */
+    --violet:#9b8cff;      /* soft violet */
+    --good:#24d18f;
+    --warn:#ffd166;
+    --bad:#ff6b6b;
+    --shadow:0 18px 60px rgba(0,0,0,.35);
+    --radius:16px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{
+    margin:0; color:var(--ink); background:
+      radial-gradient(1200px 600px at 110% -10%, rgba(155,140,255,.22), transparent 60%),
+      radial-gradient(1000px 620px at -10% -20%, rgba(54,214,196,.18), transparent 60%),
+      radial-gradient(900px 520px at 50% 110%, rgba(255,186,107,.16), transparent 60%),
+      var(--bg);
+    font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    line-height:1.55;
+  }
+
+  /* Top bar */
+  .topbar{
+    position:sticky; top:0; z-index:40;
+    backdrop-filter:saturate(140%) blur(8px);
+    background:linear-gradient(90deg, rgba(15,16,38,.8), rgba(10,11,30,.66));
+    border-bottom:1px solid rgba(255,255,255,.08);
+  }
+  .topbar-inner{
+    max-width:980px; margin:0 auto; padding:10px 14px;
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+  }
+  .brand{display:flex; align-items:center; gap:10px; min-width:0}
+  .logo{
+    width:40px; height:40px; border-radius:12px; display:grid; place-items:center; font-weight:900; color:#0d0d14;
+    background:conic-gradient(from 200deg, var(--rose), var(--peach), var(--mint), var(--violet), var(--rose));
+    box-shadow:0 0 0 2px #0d0d14 inset, 0 6px 18px rgba(0,0,0,.3);
+  }
+  .title{display:flex; flex-direction:column; min-width:0}
+  .title h1{margin:0; font-size:1.05rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .title .sub{margin:0; font-size:.9rem; color:var(--ink-dim); white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .actions{display:flex; align-items:center; gap:8px}
+  .icon-btn{
+    border:1px solid rgba(255,255,255,.14); background:#0c0e24; color:#fff;
+    padding:8px 10px; border-radius:12px; cursor:pointer; font-weight:800; display:inline-flex; align-items:center; gap:8px;
+  }
+  .icon-btn[aria-pressed="true"]{background:linear-gradient(135deg, var(--mint), var(--violet)); color:#0d0d14; border-color:transparent}
+  .pill{display:inline-flex; align-items:center; gap:8px; padding:8px 10px; border-radius:999px; font-weight:800; font-size:.85rem;
+        border:1px solid rgba(255,255,255,.18); background:#0c0e24}
+  .muted{color:var(--ink-dim)}
+
+  /* Layout */
+  .wrap{max-width:980px; margin:0 auto; padding:16px}
+  .screen{display:none}
+  .screen.active{display:block}
+  .cards{display:grid; gap:14px; grid-template-columns:repeat(2, minmax(0,1fr))}
+  @media (max-width:820px){.cards{grid-template-columns:1fr}}
+
+  .card{
+    background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015));
+    border:1px solid rgba(255,255,255,.10);
+    border-radius:var(--radius); padding:14px; box-shadow:var(--shadow)
+  }
+  .card h3{margin:.25rem 0 .25rem}
+  .cta{display:flex; gap:10px; flex-wrap:wrap}
+  .btn{
+    border:0; padding:10px 12px; border-radius:12px; cursor:pointer; font-weight:900;
+    background:linear-gradient(135deg, var(--peach), var(--rose)); color:#0e0e12;
+  }
+  .btn.ghost{background:transparent; border:1px solid rgba(255,255,255,.2); color:#fff}
+  .btn.mint{background:linear-gradient(135deg, var(--mint), var(--violet)); color:#0e0e12}
+  .btn.warn{background:linear-gradient(135deg, var(--warn), var(--peach)); color:#0e0e12}
+  .btn.bad{background:linear-gradient(135deg, var(--bad), var(--rose)); color:#0e0e12}
+  .btn.tiny{padding:7px 10px; font-size:.9rem}
+  .tag{display:inline-block; padding:2px 8px; border-radius:999px; background:#2a2d58; color:#fff; font-weight:800; font-size:.75rem}
+
+  /* Panels and elements */
+  .panel{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.015)); border:1px solid rgba(255,255,255,.10);
+         border-radius:var(--radius); padding:12px}
+  .verse{font-weight:700; font-size:1.05rem; margin:.35rem 0}
+  .ref{font-weight:800; color:var(--mint)}
+  .fav{cursor:pointer; font-weight:900; padding:6px 8px; border-radius:10px; border:1px solid rgba(255,255,255,.15); background:#0c0e24}
+  .grid-2{display:grid; gap:12px; grid-template-columns:repeat(2,minmax(0,1fr))}
+  @media (max-width:740px){.grid-2{grid-template-columns:1fr}}
+  textarea,input,select{
+    width:100%; padding:10px 12px; border-radius:12px; border:1px solid rgba(255,255,255,.16);
+    background:#0f1230; color:#fff; outline:none;
+  }
+  textarea{min-height:100px; resize:vertical}
+  .list{display:flex; flex-direction:column; gap:10px; margin-top:8px}
+  .item{display:flex; flex-direction:column; gap:6px; border:1px solid rgba(255,255,255,.12); background:#0f1230; border-radius:12px; padding:10px}
+  .item .row{display:flex; gap:8px; flex-wrap:wrap}
+  .item .meta{font-size:.85rem; color:var(--ink-dim)}
+  .kbd{display:inline-block; padding:2px 6px; border-radius:8px; background:#0e1130; border:1px solid rgba(255,255,255,.12); color:#fff; font-weight:800; font-size:.75rem}
+
+  .progress{height:12px; border-radius:999px; background:#0e1130; border:1px solid rgba(255,255,255,.12); overflow:hidden}
+  .bar{height:100%; width:0%; background:linear-gradient(90deg, var(--mint), var(--violet)); transition:width .3s ease}
+
+  /* Bottom nav */
+  .bottom-nav{
+    position:fixed; left:0; right:0; bottom:0; z-index:50;
+    background:linear-gradient(0deg, rgba(10,11,30,.95), rgba(10,11,30,.85));
+    border-top:1px solid rgba(255,255,255,.10);
+  }
+  .nav-inner{
+    max-width:980px; margin:0 auto; padding:8px 12px; display:flex; align-items:center; justify-content:space-between; gap:6px;
+  }
+  .nav-btn{
+    flex:1; border:1px solid rgba(255,255,255,.12); background:#0c0e24; color:#fff; border-radius:12px; padding:10px 6px;
+    display:flex; flex-direction:column; align-items:center; gap:6px; cursor:pointer; font-weight:800; font-size:.85rem;
+  }
+  .nav-btn.active{background:linear-gradient(135deg, var(--mint), var(--violet)); color:#0e0e12; border-color:transparent}
+  .nav-icon{font-size:1.1rem}
+
+  /* Modals */
+  .modal{
+    position:fixed; inset:0; display:none; align-items:flex-end; justify-content:center; z-index:60;
+    background:rgba(0,0,0,.55);
+  }
+  .modal.show{display:flex}
+  .sheet{
+    width:100%; max-width:720px; max-height:85vh; overflow:auto; background:#0f1230; border:1px solid rgba(255,255,255,.12);
+    border-radius:20px 20px 0 0; padding:16px 14px 100px; box-shadow:var(--shadow)
+  }
+  .sheet h3{margin:.25rem 0 .5rem}
+  .sheet .close{position:sticky; top:0; display:flex; justify-content:flex-end}
+  .close .btn{background:#1b1f42; color:#fff; border:1px solid rgba(255,255,255,.18)}
+  .sheet p, .sheet li{color:#d4dbff}
+
+  /* Toast */
+  .toast{
+    position:fixed; left:50%; transform:translateX(-50%); bottom:72px; z-index:65;
+    background:linear-gradient(135deg, var(--mint), var(--violet)); color:#0e0e12; font-weight:900;
+    padding:10px 14px; border-radius:12px; display:none;
+  }
+  .toast.show{display:inline-block}
+
+  /* Breathing circle */
+  .breath{
+    width:140px; height:140px; border-radius:50%; margin:8px auto;
+    background:radial-gradient(circle at 30% 30%, rgba(255,255,255,.9), rgba(255,255,255,.05)),
+               conic-gradient(from 0deg, var(--peach), var(--rose), var(--violet), var(--mint), var(--peach));
+    filter:blur(.2px) saturate(110%);
+    animation: pulse 6s ease-in-out infinite;
+  }
+  @keyframes pulse{0%{transform:scale(.85)} 50%{transform:scale(1)} 100%{transform:scale(.85)}}
+
+  /* helpers */
+  .caps{letter-spacing:.05em; text-transform:uppercase; font-weight:900; font-size:.8rem; color:#bcd3ff}
+  .row{display:flex; align-items:center; gap:8px; flex-wrap:wrap}
+  .space{height:12px}
+  .sr-only{position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); border:0}
+  .top-gap{height:8px}
+
+  /* Ensure space for bottom nav */
+  main{padding-bottom:90px}
+</style>
+</head>
+<body>
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
+        <div class="logo">FH</div>
+        <div class="title">
+          <h1>Father Wounds App</h1>
+          <p class="sub">Depths to Heights • Healing with the Father’s love</p>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="musicBtn" class="icon-btn" aria-pressed="false" title="Background music">
+          <span id="musicIcon">▶︎</span> <span class="sr-only">Toggle music</span>
+        </button>
+        <button id="settingsBtn" class="icon-btn" title="Settings / Info">☰</button>
+      </div>
+    </div>
+  </div>
+
+  <main class="wrap">
+    <!-- HOME / DASHBOARD -->
+    <section id="screen-home" class="screen active" role="region" aria-label="Home">
+      <div class="panel">
+        <div class="row">
+          <span class="pill">If you are in crisis, please contact your local helpline for immediate support.</span>
+        </div>
+        <div class="space"></div>
+        <div class="cards">
+          <div class="card">
+            <span class="tag">Daily</span>
+            <h3>Father’s Blessing Scripture</h3>
+            <p class="muted">Receive a fresh word of the Father’s heart every day. Save favorites to revisit.</p>
+            <div class="cta">
+              <button class="btn" data-nav="blessings">Open Today’s Blessing</button>
+              <button class="btn ghost tiny" data-nav="blessings">View All</button>
+            </div>
+          </div>
+          <div class="card">
+            <span class="tag">7-Day</span>
+            <h3>Abba Father Devotional</h3>
+            <p class="muted">A gentle 7-day journey: Scripture, reflection, and prayer—moving from wounds to trust.</p>
+            <div class="cta">
+              <button class="btn mint" data-nav="devotional">Start / Continue</button>
+              <button class="btn ghost tiny" data-nav="devotional">See Progress</button>
+            </div>
+          </div>
+          <div class="card">
+            <span class="tag">Journal</span>
+            <h3>Rewrite the Story: Lie → Truth</h3>
+            <p class="muted">“My earthly father said ____, but God says ____.” Capture and keep the Father’s truth.</p>
+            <div class="cta">
+              <button class="btn" data-nav="reflections">Open Reflections</button>
+              <button class="btn ghost tiny" data-nav="reflections">My Entries</button>
+            </div>
+          </div>
+          <div class="card">
+            <span class="tag">Audio</span>
+            <h3>Affirmations of the Father’s Love</h3>
+            <p class="muted">Soak in short spoken affirmations paired with Scripture. Choose a voice and pace.</p>
+            <div class="cta">
+              <button class="btn mint" data-nav="affirmations">Listen Now</button>
+              <button class="btn ghost tiny" data-nav="affirmations">Pick Voice</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- BLESSINGS -->
+    <section id="screen-blessings" class="screen" role="region" aria-label="Blessings">
+      <div class="row">
+        <button class="btn ghost tiny" data-nav="home">← Home</button>
+        <span class="pill">Daily Father’s Blessing</span>
+      </div>
+      <div class="space"></div>
+
+      <div class="panel">
+        <div class="row" style="justify-content:space-between; align-items:flex-start">
+          <div>
+            <div class="caps">Today’s Blessing</div>
+            <div class="verse" id="blessVerse"></div>
+            <div class="ref" id="blessRef"></div>
+          </div>
+          <div class="row">
+            <button class="fav" id="favBtn" title="Save to favorites">♡</button>
+            <button class="btn tiny" id="nextBlessing">Next</button>
+          </div>
+        </div>
+        <div class="space"></div>
+        <div class="grid-2">
+          <div class="card">
+            <h3>Why this matters</h3>
+            <p class="muted">Father wounds can distort how we see God. Scripture renews our minds and reveals the Father who runs to us (Luke 15).</p>
+          </div>
+          <div class="card">
+            <h3>My note for today</h3>
+            <textarea id="blessNote" placeholder="Write a sentence or prayer in response."></textarea>
+            <div class="top-gap"></div>
+            <div class="row">
+              <button class="btn tiny" id="saveBlessNote">Save Note</button>
+              <span id="blessNoteSaved" class="muted"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="space"></div>
+      <div class="panel">
+        <h3>My Favorite Blessings</h3>
+        <div id="favList" class="list"></div>
+      </div>
+    </section>
+
+    <!-- DEVOTIONAL -->
+    <section id="screen-devotional" class="screen" role="region" aria-label="Devotional">
+      <div class="row">
+        <button class="btn ghost tiny" data-nav="home">← Home</button>
+        <span class="pill">7-Day Abba Father Devotional</span>
+      </div>
+      <div class="space"></div>
+      <div class="panel">
+        <div class="row" style="align-items:center; justify-content:space-between">
+          <div class="caps">Progress</div>
+          <div style="min-width:160px; width:50%">
+            <div class="progress"><div id="devBar" class="bar"></div></div>
+          </div>
+          <div id="devPct" class="caps">0%</div>
+        </div>
+      </div>
+
+      <div id="devList" class="list"></div>
+    </section>
+
+    <!-- REFLECTIONS -->
+    <section id="screen-reflections" class="screen" role="region" aria-label="Reflections">
+      <div class="row">
+        <button class="btn ghost tiny" data-nav="home">← Home</button>
+        <span class="pill">Rewrite the Story</span>
+      </div>
+      <div class="space"></div>
+
+      <div class="panel">
+        <h3>New Reflection</h3>
+        <div class="grid-2">
+          <div>
+            <label class="caps" for="lie">My earthly father said / did</label>
+            <textarea id="lie" placeholder="e.g., 'You are a burden.' or a hurtful action you experienced."></textarea>
+          </div>
+          <div>
+            <label class="caps" for="truth">But God the Father says</label>
+            <textarea id="truth" placeholder="e.g., 'You are my beloved child' (1 John 3:1)."></textarea>
+          </div>
+        </div>
+        <div class="space"></div>
+        <div class="grid-2">
+          <div>
+            <label class="caps" for="scripture">Scripture (optional)</label>
+            <input id="scripture" placeholder="e.g., Romans 8:15" />
+          </div>
+          <div class="row">
+            <button class="btn mint" id="suggestTruth">Suggest Truth</button>
+            <button class="btn" id="saveReflection">Save Reflection</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="space"></div>
+      <div class="panel">
+        <div class="row" style="justify-content:space-between; align-items:center">
+          <h3>My Reflections</h3>
+          <div class="row">
+            <button class="btn tiny" id="exportReflections">Download .txt</button>
+            <button class="btn tiny" id="copyReflections">Copy to Clipboard</button>
+          </div>
+        </div>
+        <div id="reflectionsList" class="list"></div>
+      </div>
+    </section>
+
+    <!-- AFFIRMATIONS -->
+    <section id="screen-affirmations" class="screen" role="region" aria-label="Affirmations">
+      <div class="row">
+        <button class="btn ghost tiny" data-nav="home">← Home</button>
+        <span class="pill">Audio Affirmations of the Father’s Love</span>
+      </div>
+      <div class="space"></div>
+
+      <div class="panel">
+        <div class="grid-2">
+          <div class="card">
+            <h3>Voice & Pace</h3>
+            <label class="caps" for="voiceSel">Voice</label>
+            <select id="voiceSel"></select>
+            <div class="space"></div>
+            <label class="caps" for="rate">Rate</label>
+            <input id="rate" type="range" min="0.6" max="1.4" step="0.05" value="1" />
+            <div class="row"><span class="muted">Slower</span><span class="muted" style="margin-left:auto">Faster</span></div>
+            <div class="space"></div>
+            <div class="row">
+              <button class="btn mint tiny" id="playAll">Play All</button>
+              <button class="btn ghost tiny" id="stopAll">Stop</button>
+            </div>
+          </div>
+          <div class="card">
+            <h3>What this does</h3>
+            <p class="muted">Gently speak truth to your heart. Let Scripture shape your inner dialogue. You can close your eyes and breathe slowly.</p>
+            <div class="breath" aria-hidden="true"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="space"></div>
+      <div class="panel">
+        <h3>Affirmations</h3>
+        <div id="affirmationsList" class="list"></div>
+      </div>
+    </section>
+
+    <!-- CRISIS -->
+    <section id="screen-crisis" class="screen" role="region" aria-label="Crisis">
+      <div class="row">
+        <button class="btn ghost tiny" data-nav="home">← Home</button>
+        <span class="pill">Crisis Support</span>
+      </div>
+      <div class="space"></div>
+
+      <div class="panel">
+        <h3>If you are in crisis</h3>
+        <p>“If you are in crisis, please contact your local helpline for immediate support.”</p>
+        <p class="muted">You are not alone. The Father’s heart is near to the broken (Psalm 34:18). Reach out to a trusted person and your local services right now.</p>
+      </div>
+
+      <div class="space"></div>
+      <div class="panel">
+        <h3>Grounding Exercise (4-7-8)</h3>
+        <p class="muted">Breathe in for 4, hold for 7, out for 8. Use the timing below 4–5 rounds.</p>
+        <div class="row" style="align-items:center; justify-content:space-between">
+          <div class="caps" id="phaseLabel">Ready</div>
+          <div style="min-width:180px; width:60%">
+            <div class="progress"><div id="breathBar" class="bar"></div></div>
+          </div>
+          <div class="row">
+            <button class="btn tiny" id="startBreathing">Start</button>
+            <button class="btn ghost tiny" id="stopBreathing">Stop</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- RESOURCES -->
+    <section id="screen-resources" class="screen" role="region" aria-label="Resources">
+      <div class="row">
+        <button class="btn ghost tiny" data-nav="home">← Home</button>
+        <span class="pill">Resources</span>
+      </div>
+      <div class="space"></div>
+
+      <div class="panel">
+        <h3>Scriptures to Soak In</h3>
+        <ul class="muted">
+          <li>Psalm 27:10 — “Though my father and mother forsake me, the LORD will receive me.”</li>
+          <li>John 14:18 — “I will not leave you as orphans; I will come to you.”</li>
+          <li>Romans 8:15 — “You received the Spirit of adoption by whom we cry, ‘Abba! Father!’”</li>
+          <li>1 John 3:1 — “See what kind of love the Father has given to us, that we should be called children of God…”</li>
+          <li>2 Corinthians 6:18 — “I will be a Father to you…”</li>
+          <li>Zephaniah 3:17 — “He will quiet you with His love; He will rejoice over you with singing.”</li>
+          <li>Isaiah 49:15–16 — “I have engraved you on the palms of My hands.”</li>
+          <li>Luke 15:11–32 — The Father runs to the returning child.</li>
+        </ul>
+      </div>
+
+      <div class="space"></div>
+      <div class="panel">
+        <h3>Helpful Practices</h3>
+        <ul class="muted">
+          <li><span class="kbd">Daily</span> read one blessing verse; write a response.</li>
+          <li><span class="kbd">Weekly</span> complete a devotional day; share with a mentor.</li>
+          <li><span class="kbd">As needed</span> add a Lie→Truth reflection and pray the truth aloud.</li>
+          <li><span class="kbd">Sabbath</span> go for a walk; tell the Father your worries; receive His care.</li>
+        </ul>
+        <div class="row">
+          <button class="btn tiny" onclick="window.open('https://depthstoheights.org', '_blank')">Visit Depths to Heights</button>
+          <button class="btn tiny" onclick="window.open('mailto:depthstoheights@gmail.com','_blank')">Email Support</button>
+          <button class="btn tiny" onclick="window.open('https://www.paypal.com/donate/?hosted_button_id=8GRE7B8C3TP2U', '_blank')">Donate via PayPal</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- BOTTOM NAV (always visible) -->
+  <nav class="bottom-nav" aria-label="Primary">
+    <div class="nav-inner">
+      <button class="nav-btn active" data-nav="home"><span class="nav-icon">🏠</span>Home</button>
+      <button class="nav-btn" data-nav="crisis"><span class="nav-icon">🆘</span>Crisis</button>
+      <button class="nav-btn" data-nav="resources"><span class="nav-icon">📚</span>Resources</button>
+      <button class="nav-btn" id="infoOpen"><span class="nav-icon">ℹ️</span>Info</button>
+      <button class="nav-btn" id="aboutOpen"><span class="nav-icon">❤️</span>About</button>
+    </div>
+  </nav>
+
+  <!-- INFO MODAL -->
+  <div id="infoModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="infoTitle">
+    <div class="sheet">
+      <div class="close"><button class="btn tiny" id="infoClose">Close</button></div>
+      <h3 id="infoTitle">Info — What this app does</h3>
+      <p><strong>Father Wounds App</strong> helps men and women heal from wounds caused by absent, abusive, or distant fathers—by encountering God as Abba Father.</p>
+      <ul>
+        <li><strong>Daily Father’s Blessing:</strong> a Scripture each day expressing the Father’s heart.</li>
+        <li><strong>7-Day Devotional:</strong> Scripture, reflection, and prayer to renew trust.</li>
+        <li><strong>Lie → Truth Reflections:</strong> replace harmful messages with God’s truth.</li>
+        <li><strong>Audio Affirmations:</strong> on-device voice gently speaks truth and Scripture.</li>
+      </ul>
+      <h3>How to use</h3>
+      <ol>
+        <li>Open <em>Father’s Blessing</em> and read today’s verse. Save favorites.</li>
+        <li>Complete one <em>Devotional</em> day per session (progress auto-saves).</li>
+        <li>Write <em>Lie → Truth</em> reflections and pray the truth aloud.</li>
+        <li>Listen to <em>Affirmations</em> with slow breathing. Use headphones if possible.</li>
+      </ol>
+      <h3>Install on your phone</h3>
+      <ul>
+        <li><strong>iPhone (Safari):</strong> Share → <em>Add to Home Screen</em></li>
+        <li><strong>Android (Chrome):</strong> Menu ⋮ → <em>Add to Home Screen</em></li>
+      </ul>
+      <div class="row">
+        <button class="btn tiny" onclick="window.open('https://depthstoheights.org','_blank')">Website</button>
+        <button class="btn tiny" onclick="window.open('mailto:depthstoheights@gmail.com','_blank')">Email</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ABOUT MODAL -->
+  <div id="aboutModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="aboutTitle">
+    <div class="sheet">
+      <div class="close"><button class="btn tiny" id="aboutClose">Close</button></div>
+      <h3 id="aboutTitle">About • Depths to Heights</h3>
+      <p><strong>Made by Justin</strong> • <em>Depths to Heights</em></p>
+      <p><a href="https://depthstoheights.org" target="_blank" rel="noopener">depthstoheights.org</a> • <a href="mailto:depthstoheights@gmail.com" target="_blank" rel="noopener">depthstoheights@gmail.com</a></p>
+      <p><strong>Mission:</strong> From the deepest places to the highest praise—helping people encounter the Father’s love, grow in Scripture, and live whole.</p>
+      <div class="row">
+        <button class="btn tiny" onclick="window.open('https://www.paypal.com/donate/?hosted_button_id=8GRE7B8C3TP2U','_blank')">Donate via PayPal</button>
+      </div>
+      <div class="space"></div>
+      <div class="panel">
+        <h3>Privacy & Data</h3>
+        <p class="muted">Your entries stay on this device using LocalStorage. No accounts or servers are used.</p>
+        <div class="row">
+          <button class="btn warn tiny" id="exportAll">Export All Data</button>
+          <button class="btn bad tiny" id="resetAll">Reset App (local)</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ===========================
+   DATA
+   =========================== */
+const blessings = [
+  {ref:"Psalm 27:10", text:"Though my father and mother forsake me, the LORD will receive me."},
+  {ref:"John 14:18", text:"I will not leave you as orphans; I will come to you."},
+  {ref:"Romans 8:15", text:"You received the Spirit of adoption by whom we cry, 'Abba! Father!'"},
+  {ref:"1 John 3:1", text:"See what kind of love the Father has given to us, that we should be called children of God."},
+  {ref:"2 Corinthians 6:18", text:"I will be a Father to you, and you shall be my sons and daughters, says the Lord Almighty."},
+  {ref:"Zephaniah 3:17", text:"He will quiet you with His love; He will rejoice over you with singing."},
+  {ref:"Isaiah 49:15–16", text:"I will not forget you. Behold, I have engraved you on the palms of my hands."},
+  {ref:"Luke 15:20", text:"While he was still a long way off, his father ran and embraced him and kissed him."},
+  {ref:"Matthew 7:11", text:"Your Father in heaven gives good things to those who ask Him."},
+  {ref:"Jeremiah 31:3", text:"I have loved you with an everlasting love; therefore I have continued my faithfulness to you."},
+  {ref:"Psalm 103:13", text:"As a father shows compassion to his children, so the LORD shows compassion to those who fear Him."},
+  {ref:"Ephesians 1:5", text:"He predestined us for adoption to Himself as sons through Jesus Christ."},
+  {ref:"Deuteronomy 1:31", text:"In the wilderness... the LORD your God carried you, as a man carries his son."},
+  {ref:"James 1:17", text:"Every good and perfect gift is from above, coming down from the Father of lights."},
+  {ref:"Hebrews 12:6", text:"The Lord disciplines the one he loves, and chastises every son whom he receives."},
+  {ref:"Psalm 68:5–6", text:"Father of the fatherless and protector of widows is God in his holy habitation. He sets the lonely in families."},
+  {ref:"Isaiah 40:11", text:"He will tend his flock like a shepherd; he will gather the lambs in his arms."},
+  {ref:"Romans 8:38–39", text:"Nothing in all creation will be able to separate us from the love of God in Christ Jesus our Lord."},
+  {ref:"2 Thessalonians 2:16–17", text:"Our Lord Jesus Christ Himself, and God our Father... comfort your hearts and establish them."},
+  {ref:"Psalm 139:17–18", text:"How precious to me are your thoughts, O God! If I would count them, they are more than the sand."},
+  {ref:"Isaiah 41:10", text:"Fear not, for I am with you; I will strengthen you, I will help you; I will uphold you."},
+  {ref:"Exodus 34:6", text:"The LORD, merciful and gracious, slow to anger, and abounding in steadfast love and faithfulness."},
+  {ref:"John 16:27", text:"The Father himself loves you, because you have loved me and have believed that I came from God."},
+  {ref:"1 Peter 5:7", text:"Cast all your anxiety on him because he cares for you."}
+];
+
+const devotional = [
+  {
+    title:"Day 1 — The Father Who Sees",
+    verse:"Genesis 16:13; Psalm 139:1–4",
+    devo:"God is not distant. He sees and knows you by name. Where earthly fathers failed to see, your heavenly Father attends with perfect attention.",
+    reflect:"Where do you feel unseen? Tell the Father about one place you need His attention.",
+    prayer:"Abba, thank You for seeing me. Open my eyes to Your gaze of love today."
+  },
+  {
+    title:"Day 2 — Adopted, Not Abandoned",
+    verse:"Romans 8:14–16; Ephesians 1:5",
+    devo:"Through Jesus, you are adopted. Adoption replaces the orphan spirit with the Spirit of sonship and belonging.",
+    reflect:"What does belonging to the Father change about you today?",
+    prayer:"Abba, I receive Your Spirit of adoption. Teach me to cry, 'Abba, Father.'"
+  },
+  {
+    title:"Day 3 — The Running Father",
+    verse:"Luke 15:11–24",
+    devo:"The Father runs toward the returning child. Shame is met with embrace, not lecture.",
+    reflect:"Where have you expected rejection? Picture the Father running to you.",
+    prayer:"Abba, run to me again. Wrap me in Your embrace."
+  },
+  {
+    title:"Day 4 — The Father’s Voice",
+    verse:"Matthew 3:17; Isaiah 55:3",
+    devo:"Before Jesus worked a miracle, the Father said, 'You are my beloved Son; with you I am well pleased.' Identity precedes activity.",
+    reflect:"Write one 'beloved' statement you sense from the Father.",
+    prayer:"Abba, tune my ear to Your voice above every other."
+  },
+  {
+    title:"Day 5 — Compassion & Discipline",
+    verse:"Psalm 103:13; Hebrews 12:6",
+    devo:"The Father’s correction flows from compassion, not control. Discipline restores dignity and direction.",
+    reflect:"Where do you need the Father’s gentle course-correction?",
+    prayer:"Abba, correct me in love and lead me in Your ways."
+  },
+  {
+    title:"Day 6 — The Father Who Provides",
+    verse:"Matthew 7:11; James 1:17",
+    devo:"Every good gift comes from the Father. He is generous without manipulation.",
+    reflect:"Name a need. Ask the Father to provide, and watch for His care.",
+    prayer:"Abba, thank You for daily bread and unexpected gifts."
+  },
+  {
+    title:"Day 7 — Engraved on His Hands",
+    verse:"Isaiah 49:15–16; Zephaniah 3:17",
+    devo:"The Father cannot forget you. His love sings over you and writes your name on His hands.",
+    reflect:"What song do you need the Father to sing over you today?",
+    prayer:"Abba, engrave Your love on my heart as it is on Your hands."
+  }
+];
+
+const truthSuggestions = [
+  {truth:"You are My beloved child, chosen and wanted.", verse:"1 John 3:1"},
+  {truth:"I will never leave you nor forsake you.", verse:"Hebrews 13:5"},
+  {truth:"You are precious in My eyes, and honored, and I love you.", verse:"Isaiah 43:4"},
+  {truth:"My grace is sufficient for you; My power is made perfect in weakness.", verse:"2 Corinthians 12:9"},
+  {truth:"I have loved you with an everlasting love.", verse:"Jeremiah 31:3"},
+  {truth:"Nothing can separate you from My love in Christ.", verse:"Romans 8:38–39"},
+  {truth:"I carry you like a father carries his child.", verse:"Deuteronomy 1:31"},
+  {truth:"I rejoice over you with singing.", verse:"Zephaniah 3:17"}
+];
+
+const affirmations = [
+  {line:"Abba, You see me and You know me.", verse:"Psalm 139:1–4"},
+  {line:"I am adopted, not abandoned.", verse:"Romans 8:15"},
+  {line:"The Father runs to me with compassion.", verse:"Luke 15:20"},
+  {line:"I am the beloved of the Father.", verse:"Matthew 3:17"},
+  {line:"The Father corrects me in love, not shame.", verse:"Hebrews 12:6"},
+  {line:"Every good gift comes from the Father.", verse:"James 1:17"},
+  {line:"I am engraved on His hands.", verse:"Isaiah 49:16"},
+  {line:"Nothing can separate me from the Father’s love.", verse:"Romans 8:38–39"}
+];
+
+/* ===========================
+   STATE & STORAGE
+   =========================== */
+const KEY = "dth_father_app";
+const state = {
+  view:"home",
+  musicOn:false,
+  favorites:[],       // array of indexes into blessings
+  blessNoteById:{},   // daily note per blessing index
+  currentBlessId:0,
+  reflections:[],     // {id, lie, truth, verse, ts}
+  devCompleted:{},    // dayIndex: true
+  ttsVoice:null,
+  ttsRate:1
+};
+
+function loadState(){
+  const raw = localStorage.getItem(KEY);
+  if(!raw) return;
+  try{
+    const saved = JSON.parse(raw);
+    Object.assign(state, saved);
+  }catch(e){}
+}
+function saveState(){
+  localStorage.setItem(KEY, JSON.stringify({
+    view: state.view,
+    musicOn: state.musicOn,
+    favorites: state.favorites,
+    blessNoteById: state.blessNoteById,
+    currentBlessId: state.currentBlessId,
+    reflections: state.reflections,
+    devCompleted: state.devCompleted,
+    ttsVoice: state.ttsVoice,
+    ttsRate: state.ttsRate
+  }));
+}
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+/* ===========================
+   NAVIGATION
+   =========================== */
+const screens = {
+  home: document.getElementById('screen-home'),
+  blessings: document.getElementById('screen-blessings'),
+  devotional: document.getElementById('screen-devotional'),
+  reflections: document.getElementById('screen-reflections'),
+  affirmations: document.getElementById('screen-affirmations'),
+  crisis: document.getElementById('screen-crisis'),
+  resources: document.getElementById('screen-resources')
+};
+function show(view){
+  state.view = view; saveState();
+  Object.values(screens).forEach(el=>el.classList.remove('active'));
+  screens[view].classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.toggle('active', b.dataset.nav===view));
+  // Render view-specific parts
+  if(view==="blessings") renderBlessing();
+  if(view==="devotional") renderDevotional();
+  if(view==="reflections") renderReflections();
+  if(view==="affirmations") renderAffirmations();
+}
+document.addEventListener('click', (e)=>{
+  const nav = e.target.closest('[data-nav]');
+  if(!nav) return;
+  const target = nav.dataset.nav;
+  if(target==="home") show('home');
+  if(target==="blessings") show('blessings');
+  if(target==="devotional") show('devotional');
+  if(target==="reflections") show('reflections');
+  if(target==="affirmations") show('affirmations');
+  if(target==="crisis") show('crisis');
+  if(target==="resources") show('resources');
+});
+
+/* ===========================
+   BACKGROUND MUSIC (WebAudio)
+   =========================== */
+let audioCtx=null, master=null, oscA=null, oscB=null, lfo=null, filter=null;
+function startMusic(){
+  if(!audioCtx){ audioCtx = new (window.AudioContext||window.webkitAudioContext)(); }
+  master = audioCtx.createGain(); master.gain.value = 0.03;
+  filter = audioCtx.createBiquadFilter(); filter.type='lowpass'; filter.frequency.value=900;
+  // Two gentle detuned pads
+  oscA = audioCtx.createOscillator(); oscA.type='sine'; oscA.frequency.value=174; // F3-ish calming
+  oscB = audioCtx.createOscillator(); oscB.type='triangle'; oscB.frequency.value=261.63; // C4
+  // slow LFO on filter
+  lfo = audioCtx.createOscillator(); lfo.type='sine'; lfo.frequency.value=0.06;
+  const lfoGain = audioCtx.createGain(); lfoGain.gain.value=200;
+  lfo.connect(lfoGain).connect(filter.frequency);
+  oscA.connect(filter); oscB.connect(filter);
+  filter.connect(master).connect(audioCtx.destination);
+  oscA.start(); oscB.start(); lfo.start();
+  state.musicOn = true; saveState();
+  document.getElementById('musicBtn').setAttribute('aria-pressed', 'true');
+  document.getElementById('musicIcon').textContent = '⏸';
+  toast('Music on');
+}
+function stopMusic(){
+  try{ oscA.stop(); oscB.stop(); lfo.stop(); }catch(e){}
+  oscA=oscB=lfo=null; master && master.disconnect(); filter && filter.disconnect();
+  state.musicOn = false; saveState();
+  document.getElementById('musicBtn').setAttribute('aria-pressed', 'false');
+  document.getElementById('musicIcon').textContent = '▶︎';
+  toast('Music off');
+}
+document.getElementById('musicBtn').addEventListener('click', ()=>{
+  if(!state.musicOn) startMusic(); else stopMusic();
+});
+
+/* ===========================
+   INFO / ABOUT MODALS
+   =========================== */
+const infoModal = document.getElementById('infoModal');
+const aboutModal = document.getElementById('aboutModal');
+document.getElementById('infoOpen').addEventListener('click', ()=> infoModal.classList.add('show'));
+document.getElementById('aboutOpen').addEventListener('click', ()=> aboutModal.classList.add('show'));
+document.getElementById('infoClose').addEventListener('click', ()=> infoModal.classList.remove('show'));
+document.getElementById('aboutClose').addEventListener('click', ()=> aboutModal.classList.remove('show'));
+document.getElementById('settingsBtn').addEventListener('click', ()=> infoModal.classList.add('show'));
+
+document.getElementById('exportAll').addEventListener('click', ()=>{
+  const dump = JSON.stringify({ ...state }, null, 2);
+  const blob = new Blob([dump], {type:'application/json;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href=url; a.download='father-wounds-app-data.json'; document.body.appendChild(a); a.click();
+  setTimeout(()=>{a.remove(); URL.revokeObjectURL(url);},0);
+  toast('Data exported');
+});
+document.getElementById('resetAll').addEventListener('click', ()=>{
+  // No confirm dialogs—use soft reset with undo option
+  const backup = JSON.stringify({ ...state });
+  localStorage.removeItem(KEY);
+  Object.assign(state, {view:'home', musicOn:false, favorites:[], blessNoteById:{}, currentBlessId:0, reflections:[], devCompleted:{}, ttsVoice:null, ttsRate:1});
+  saveState(); renderAll();
+  // Offer quick undo
+  const t=document.getElementById('toast');
+  t.innerHTML = 'App reset. <button class="btn tiny" style="margin-left:8px" id="undoReset">Undo</button>';
+  t.classList.add('show');
+  const undo = ()=>{ try{ Object.assign(state, JSON.parse(backup)); saveState(); renderAll(); }catch(e){} t.classList.remove('show'); }
+  document.addEventListener('click', function handler(e){
+    if(e.target && e.target.id==='undoReset'){ undo(); document.removeEventListener('click', handler); }
+  }, {once:true});
+  setTimeout(()=>t.classList.remove('show'), 5000);
+});
+
+/* ===========================
+   BLESSINGS
+   =========================== */
+const blessVerse = document.getElementById('blessVerse');
+const blessRef = document.getElementById('blessRef');
+const favBtn = document.getElementById('favBtn');
+const favList = document.getElementById('favList');
+
+function blessIndexForToday(){
+  const d=new Date(); const seed = d.getFullYear()*1000 + (d.getMonth()+1)*50 + d.getDate();
+  return seed % blessings.length;
+}
+function renderBlessing(){
+  if(state.currentBlessId==null) state.currentBlessId = blessIndexForToday();
+  const b = blessings[state.currentBlessId];
+  blessVerse.textContent = '“' + b.text + '”';
+  blessRef.textContent = b.ref;
+  favBtn.textContent = state.favorites.includes(state.currentBlessId) ? '♥ Saved' : '♡ Save';
+  // note
+  const note = state.blessNoteById[state.currentBlessId] || '';
+  document.getElementById('blessNote').value = note;
+  renderFavorites();
+}
+function renderFavorites(){
+  favList.innerHTML = '';
+  if(state.favorites.length===0){
+    const empty = document.createElement('div');
+    empty.className='muted'; empty.textContent='No favorites yet.';
+    favList.appendChild(empty); return;
+  }
+  state.favorites.forEach(idx=>{
+    const b = blessings[idx];
+    const div = document.createElement('div');
+    div.className='item';
+    div.innerHTML = `
+      <div class="row" style="justify-content:space-between">
+        <div><span class="ref">${b.ref}</span></div>
+        <div class="row">
+          <button class="btn tiny ghost" data-remove-fav="${idx}">Remove</button>
+          <button class="btn tiny" data-jump-fav="${idx}">Open</button>
+        </div>
+      </div>
+      <div class="muted">“${b.text}”</div>
+    `;
+    favList.appendChild(div);
+  });
+}
+document.getElementById('nextBlessing').addEventListener('click', ()=>{
+  state.currentBlessId = (state.currentBlessId + 1) % blessings.length;
+  saveState(); renderBlessing();
+});
+favBtn.addEventListener('click', ()=>{
+  const i = state.currentBlessId;
+  if(state.favorites.includes(i)){
+    state.favorites = state.favorites.filter(x=>x!==i);
+    toast('Removed from favorites');
+  }else{
+    state.favorites.push(i);
+    toast('Saved to favorites');
+  }
+  saveState(); renderBlessing();
+});
+document.getElementById('saveBlessNote').addEventListener('click', ()=>{
+  const txt = document.getElementById('blessNote').value.trim();
+  state.blessNoteById[state.currentBlessId] = txt;
+  saveState();
+  const info = document.getElementById('blessNoteSaved');
+  info.textContent = 'Saved ✓'; setTimeout(()=>info.textContent='', 1500);
+});
+favList.addEventListener('click', (e)=>{
+  const r = e.target.getAttribute('data-remove-fav');
+  const j = e.target.getAttribute('data-jump-fav');
+  if(r!=null){
+    state.favorites = state.favorites.filter(x=>x!==Number(r));
+    saveState(); renderFavorites(); toast('Removed');
+  }
+  if(j!=null){
+    state.currentBlessId = Number(j); saveState(); renderBlessing();
+    toast('Opened blessing');
+  }
+});
+
+/* ===========================
+   DEVOTIONAL
+   =========================== */
+function renderDevotional(){
+  const list = document.getElementById('devList');
+  list.innerHTML = '';
+  devotional.forEach((day, idx)=>{
+    const done = !!state.devCompleted[idx];
+    const item=document.createElement('div');
+    item.className='item';
+    item.innerHTML = `
+      <div class="row" style="justify-content:space-between">
+        <div><strong>${day.title}</strong><div class="meta">${day.verse}</div></div>
+        <div class="row">
+          <span class="tag" style="background:${done?'#194f3a':'#2a2d58'}">${done?'Done':'Not done'}</span>
+          <button class="btn tiny" data-open-day="${idx}">${done?'Review':'Start'}</button>
+        </div>
+      </div>
+    `;
+    list.appendChild(item);
+  });
+  const pct = Math.round(Object.keys(state.devCompleted).length / devotional.length * 100);
+  document.getElementById('devPct').textContent = pct+'%';
+  document.getElementById('devBar').style.width = pct+'%';
+}
+document.getElementById('devList').addEventListener('click', (e)=>{
+  const idx = e.target.getAttribute('data-open-day');
+  if(idx==null) return;
+  openDevDay(Number(idx));
+});
+function openDevDay(idx){
+  const day = devotional[idx];
+  const container = document.createElement('div');
+  container.className='sheet';
+  container.innerHTML = `
+    <div class="close"><button class="btn tiny" id="devClose">Close</button></div>
+    <h3>${day.title}</h3>
+    <p class="muted"><strong>Scripture:</strong> ${day.verse}</p>
+    <p>${day.devo}</p>
+    <div class="panel">
+      <div class="caps">Reflection</div>
+      <p>${day.reflect}</p>
+      <textarea id="devNote" placeholder="Write your reflection…">${(state.devCompleted[idx] && state.devCompleted[idx].note) ? state.devCompleted[idx].note : ''}</textarea>
+      <div class="row">
+        <button class="btn mint tiny" id="markDone">${state.devCompleted[idx] ? 'Update Note' : 'Mark as Done'}</button>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="caps">Prayer</div>
+      <p class="muted">${day.prayer}</p>
+    </div>
+  `;
+  // temp modal container
+  const modal = document.createElement('div');
+  modal.className='modal show'; modal.style.zIndex='70';
+  modal.appendChild(container);
+  document.body.appendChild(modal);
+
+  modal.addEventListener('click',(e)=>{ if(e.target.id==='devClose') modal.remove(); });
+
+  container.querySelector('#markDone').addEventListener('click', ()=>{
+    const note = container.querySelector('#devNote').value.trim();
+    state.devCompleted[idx] = {done:true, note};
+    saveState(); renderDevotional();
+    modal.remove();
+    toast('Saved ✓');
+  });
+}
+
+/* ===========================
+   REFLECTIONS (Lie → Truth)
+   =========================== */
+function renderReflections(){
+  const list = document.getElementById('reflectionsList');
+  list.innerHTML = '';
+  if(state.reflections.length===0){
+    const empty=document.createElement('div');
+    empty.className='muted'; empty.textContent='No reflections yet.';
+    list.appendChild(empty); return;
+  }
+  // newest first
+  [...state.reflections].sort((a,b)=>b.ts-a.ts).forEach(entry=>{
+    const div=document.createElement('div'); div.className='item';
+    div.innerHTML = `
+      <div class="row" style="justify-content:space-between; align-items:flex-start">
+        <div>
+          <div class="meta">${new Date(entry.ts).toLocaleString()}</div>
+          <div><strong>Lie:</strong> ${escapeHtml(entry.lie)}</div>
+          <div><strong>Truth:</strong> ${escapeHtml(entry.truth)}</div>
+          ${entry.verse ? `<div class="meta">Scripture: ${escapeHtml(entry.verse)}</div>`:''}
+        </div>
+        <div class="row">
+          <button class="btn tiny" data-edit="${entry.id}">Edit</button>
+          <button class="btn ghost tiny" data-delete="${entry.id}">Delete</button>
+        </div>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+}
+function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c])); }
+
+document.getElementById('saveReflection').addEventListener('click', ()=>{
+  const lie = document.getElementById('lie').value.trim();
+  const truth = document.getElementById('truth').value.trim();
+  const verse = document.getElementById('scripture').value.trim();
+  if(!lie || !truth){
+    toast('Please write both sides'); return;
+  }
+  const entry = {id: Date.now(), lie, truth, verse, ts: Date.now()};
+  state.reflections.push(entry); saveState();
+  document.getElementById('lie').value='';
+  document.getElementById('truth').value='';
+  document.getElementById('scripture').value='';
+  renderReflections(); toast('Reflection saved');
+});
+document.getElementById('suggestTruth').addEventListener('click', ()=>{
+  const s = truthSuggestions[Math.floor(Math.random()*truthSuggestions.length)];
+  document.getElementById('truth').value = s.truth;
+  document.getElementById('scripture').value = s.verse;
+  toast('Suggestion added');
+});
+document.getElementById('reflectionsList').addEventListener('click', (e)=>{
+  const idDel = e.target.getAttribute('data-delete');
+  const idEd = e.target.getAttribute('data-edit');
+  if(idDel){
+    // soft delete with undo
+    const id=Number(idDel); const idx = state.reflections.findIndex(r=>r.id===id);
+    if(idx>-1){
+      const removed = state.reflections.splice(idx,1)[0]; saveState(); renderReflections();
+      const t=document.getElementById('toast');
+      t.innerHTML = 'Deleted. <button class="btn tiny" id="undoDel">Undo</button>';
+      t.classList.add('show');
+      const undo = ()=>{ state.reflections.push(removed); saveState(); renderReflections(); t.classList.remove('show'); toast('Restored'); }
+      document.addEventListener('click', function handler(ev){ if(ev.target && ev.target.id==='undoDel'){ undo(); document.removeEventListener('click', handler); } }, {once:true});
+      setTimeout(()=>t.classList.remove('show'), 4000);
+    }
+  }
+  if(idEd){
+    const id=Number(idEd);
+    const item = state.reflections.find(r=>r.id===id);
+    if(!item) return;
+    // inline editor sheet
+    const sheet=document.createElement('div'); sheet.className='sheet';
+    sheet.innerHTML=`
+      <div class="close"><button class="btn tiny" id="edClose">Close</button></div>
+      <h3>Edit Reflection</h3>
+      <label class="caps">Lie</label>
+      <textarea id="edLie">${escapeHtml(item.lie)}</textarea>
+      <label class="caps">Truth</label>
+      <textarea id="edTruth">${escapeHtml(item.truth)}</textarea>
+      <label class="caps">Scripture</label>
+      <input id="edVerse" value="${escapeHtml(item.verse||'')}" />
+      <div class="row"><button class="btn mint tiny" id="edSave">Save</button></div>
+    `;
+    const modal = document.createElement('div'); modal.className='modal show'; modal.style.zIndex='70'; modal.appendChild(sheet);
+    document.body.appendChild(modal);
+    modal.addEventListener('click',(ev)=>{ if(ev.target && ev.target.id==='edClose') modal.remove(); });
+    sheet.querySelector('#edSave').addEventListener('click', ()=>{
+      item.lie = sheet.querySelector('#edLie').value.trim();
+      item.truth = sheet.querySelector('#edTruth').value.trim();
+      item.verse = sheet.querySelector('#edVerse').value.trim();
+      item.ts = Date.now();
+      saveState(); renderReflections(); modal.remove(); toast('Updated ✓');
+    });
+  }
+});
+document.getElementById('exportReflections').addEventListener('click', ()=>{
+  const lines = state.reflections.sort((a,b)=>a.ts-b.ts).map(r=>{
+    return `Date: ${new Date(r.ts).toLocaleString()}\nLie: ${r.lie}\nTruth: ${r.truth}${r.verse?`\nScripture: ${r.verse}`:''}\n---`;
+  }).join('\n');
+  const blob = new Blob([lines], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob); const a = document.createElement('a');
+  a.href=url; a.download='father-wounds-reflections.txt'; document.body.appendChild(a); a.click();
+  setTimeout(()=>{a.remove(); URL.revokeObjectURL(url)},0);
+  toast('Downloaded');
+});
+document.getElementById('copyReflections').addEventListener('click', async ()=>{
+  const lines = state.reflections.sort((a,b)=>a.ts-b.ts).map(r=>{
+    return `Date: ${new Date(r.ts).toLocaleString()} | Lie: ${r.lie} | Truth: ${r.truth}${r.verse?` | ${r.verse}`:''}`;
+  }).join('\n');
+  try{ await navigator.clipboard.writeText(lines); toast('Copied to clipboard'); }catch(e){ toast('Copy not available'); }
+});
+
+/* ===========================
+   AFFIRMATIONS (SpeechSynthesis)
+   =========================== */
+const voiceSel = document.getElementById('voiceSel');
+const rateEl = document.getElementById('rate');
+const affList = document.getElementById('affirmationsList');
+let playingQueue = false;
+
+function populateVoices(){
+  const voices = window.speechSynthesis ? speechSynthesis.getVoices() : [];
+  voiceSel.innerHTML='';
+  if(!voices || voices.length===0){
+    const opt=document.createElement('option'); opt.value=''; opt.textContent='(Device voice unavailable)';
+    voiceSel.appendChild(opt); voiceSel.disabled=true; return;
+  }
+  voices.forEach((v,i)=>{
+    const opt=document.createElement('option');
+    opt.value=v.name; opt.textContent = `${v.name} ${v.lang?`(${v.lang})`:''}`;
+    voiceSel.appendChild(opt);
+  });
+  // restore
+  if(state.ttsVoice){
+    const find=[...voiceSel.options].find(o=>o.value===state.ttsVoice);
+    if(find) voiceSel.value=state.ttsVoice;
+  }
+}
+if('speechSynthesis' in window){
+  speechSynthesis.onvoiceschanged = populateVoices;
+  populateVoices();
+}
+
+function speakLine(text){
+  if(!('speechSynthesis' in window)) { toast('TTS not supported'); return null; }
+  const u = new SpeechSynthesisUtterance(text);
+  const voices = speechSynthesis.getVoices();
+  const vname = voiceSel.value || state.ttsVoice;
+  const v = voices.find(x=>x.name===vname) || voices.find(x=>x.lang && x.lang.toLowerCase().startsWith('en')) || voices[0];
+  if(v) u.voice = v;
+  u.rate = parseFloat(rateEl.value||state.ttsRate||1);
+  speechSynthesis.speak(u);
+  return u;
+}
+function stopSpeaking(){
+  if('speechSynthesis' in window){ speechSynthesis.cancel(); }
+}
+function renderAffirmations(){
+  affList.innerHTML='';
+  affirmations.forEach((a, i)=>{
+    const div=document.createElement('div'); div.className='item';
+    div.innerHTML = `
+      <div class="row" style="justify-content:space-between">
+        <div>
+          <div><strong>${a.line}</strong></div>
+          <div class="meta">${a.verse}</div>
+        </div>
+        <div class="row">
+          <button class="btn mint tiny" data-play="${i}">Play</button>
+          <button class="btn ghost tiny" data-stop="${i}">Stop</button>
+        </div>
+      </div>
+    `;
+    affList.appendChild(div);
+  });
+}
+affList.addEventListener('click', (e)=>{
+  const p = e.target.getAttribute('data-play');
+  const s = e.target.getAttribute('data-stop');
+  if(p!=null){ speakLine(`${affirmations[p].line}. ${affirmations[p].verse}.`); }
+  if(s!=null){ stopSpeaking(); }
+});
+document.getElementById('playAll').addEventListener('click', async ()=>{
+  if(!('speechSynthesis' in window)){ toast('Device voice not available'); return; }
+  if(playingQueue){ stopSpeaking(); playingQueue=false; return; }
+  playingQueue = true; toast('Playing');
+  for(let i=0; i<affirmations.length && playingQueue; i++){
+    const text = `${affirmations[i].line}. ${affirmations[i].verse}.`;
+    const u = new SpeechSynthesisUtterance(text);
+    const voices = speechSynthesis.getVoices();
+    const vname = voiceSel.value || state.ttsVoice;
+    const v = voices.find(x=>x.name===vname) || voices.find(x=>x.lang && x.lang.toLowerCase().startsWith('en')) || voices[0];
+    if(v) u.voice=v;
+    u.rate=parseFloat(rateEl.value||1);
+    await speakAndWait(u);
+  }
+  playingQueue=false; toast('Done');
+});
+document.getElementById('stopAll').addEventListener('click', ()=>{ playingQueue=false; stopSpeaking(); toast('Stopped'); });
+
+function speakAndWait(utter){
+  return new Promise(res=>{
+    utter.onend=()=>res();
+    utter.onerror=()=>res();
+    speechSynthesis.speak(utter);
+  });
+}
+voiceSel.addEventListener('change', ()=>{ state.ttsVoice = voiceSel.value||null; saveState(); });
+rateEl.addEventListener('input', ()=>{ state.ttsRate = parseFloat(rateEl.value); saveState(); });
+
+/* ===========================
+   BREATHING TIMER
+   =========================== */
+let breathTimer=null, phase=0, tStart=0;
+const PHASES = [
+  {name:'Inhale', seconds:4},
+  {name:'Hold', seconds:7},
+  {name:'Exhale', seconds:8}
+];
+function startBreathing(){
+  stopBreathing();
+  phase=0; tStart=performance.now();
+  loopBreath();
+}
+function loopBreath(){
+  const label=document.getElementById('phaseLabel');
+  const bar=document.getElementById('breathBar');
+  const now=performance.now();
+  const dur=PHASES[phase].seconds*1000;
+  const el=now-tStart;
+  const pct = Math.min(1, el/dur);
+  bar.style.width = (pct*100)+'%';
+  label.textContent = PHASES[phase].name;
+  if(el>=dur){
+    phase = (phase+1)%PHASES.length;
+    tStart=performance.now();
+  }
+  breathTimer = requestAnimationFrame(loopBreath);
+}
+function stopBreathing(){
+  if(breathTimer) cancelAnimationFrame(breathTimer);
+  breathTimer=null;
+  document.getElementById('phaseLabel').textContent='Ready';
+  document.getElementById('breathBar').style.width='0%';
+}
+document.getElementById('startBreathing').addEventListener('click', startBreathing);
+document.getElementById('stopBreathing').addEventListener('click', stopBreathing);
+
+/* ===========================
+   INFO INIT & RENDER ALL
+   =========================== */
+function renderAll(){
+  renderBlessing();
+  renderDevotional();
+  renderReflections();
+  renderAffirmations();
+  // restore controls
+  document.getElementById('musicBtn').setAttribute('aria-pressed', state.musicOn?'true':'false');
+  document.getElementById('musicIcon').textContent = state.musicOn ? '⏸' : '▶︎';
+  if(state.musicOn && !audioCtx) {
+    // will only start when user clicks (autoplay rules), so keep state; do not auto-start
+  }
+  if(state.view && screens[state.view]) show(state.view); else show('home');
+}
+document.getElementById('saveBlessNote'); // reference to ensure element is present
+
+// Blessing actions
+document.getElementById('blessNote'); // ensure present
+document.getElementById('blessNoteSaved'); // ensure present
+document.getElementById('favList'); // ensure present
+
+// Lifecycle
+loadState();
+renderAll();
+</script>
+</body>
+</html>
